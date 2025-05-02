@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import ForestMap from "../map/ForestMap";
+import MapSelector from "../map/MapSelector";
 
 const forestLocations = [
   { id: 1, name: "Amazon Rainforest", lat: -3.4653, lng: -62.2159, trees: 15000, area: "Brazil" },
@@ -54,7 +54,7 @@ const ImpactMap = () => {
               </div>
             </div>
             <div className="lg:w-2/3 relative overflow-hidden">
-              <ForestMap locations={forestLocations} height="500px" />
+              <MapSelector locations={forestLocations} height="500px" highlightedLocationId={activeLocation} />
             </div>
           </div>
         </div>

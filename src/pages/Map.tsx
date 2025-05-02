@@ -1,6 +1,6 @@
 
 import Layout from "@/components/layout/Layout";
-import ForestMap from "@/components/map/ForestMap";
+import MapSelector from "@/components/map/MapSelector";
 import { Button } from "@/components/ui/button";
 import PlantingOrganizations from "@/components/map/PlantingOrganizations";
 import { useState } from "react";
@@ -23,7 +23,7 @@ const Map = () => {
             <PlantingOrganizations onSelectOrg={(id) => setSelectedOrgId(id)} selectedOrgId={selectedOrgId} />
           </div>
           <div className="lg:col-span-3 h-[600px]">
-            <ForestMap height="600px" highlightedLocationId={selectedOrgId} />
+            <MapSelector height="600px" highlightedLocationId={selectedOrgId} />
           </div>
         </div>
         
