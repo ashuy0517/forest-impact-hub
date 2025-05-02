@@ -1,6 +1,7 @@
 
 import { useRef, useEffect, useState } from 'react';
-import { Chart } from '@/components/ui/chart';
+import { ChartContainer } from '@/components/ui/chart';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 const ImpactStats = () => {
   const [animate, setAnimate] = useState(false);
@@ -86,40 +87,33 @@ const ImpactStats = () => {
         <div className="bg-white rounded-lg shadow-md p-4 md:p-8">
           <h3 className="text-xl font-semibold text-forest-800 mb-6">Monthly Tree Planting Progress</h3>
           <div className="h-80">
-            <Chart
-              type="bar"
-              data={{
-                labels: treeData.map(item => item.name),
-                datasets: [
-                  {
-                    label: 'Trees Planted',
-                    data: treeData.map(item => item.trees),
-                    backgroundColor: '#4CAF50',
-                    borderColor: '#388E3C',
-                    borderWidth: 1,
-                  },
-                ],
+            <ChartContainer 
+              className="w-full h-full" 
+              config={{
+                trees: {
+                  label: "Trees Planted",
+                  color: "#4CAF50"
+                }
               }}
-              options={{
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                  y: {
-                    beginAtZero: true,
-                    title: {
-                      display: true,
-                      text: 'Number of Trees',
-                    },
-                  },
-                  x: {
-                    title: {
-                      display: true,
-                      text: 'Month',
-                    },
-                  },
-                },
-              }}
-            />
+            >
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={treeData}
+                  margin={{
+                    top: 20,
+                    right: 30,
+                    left: 20,
+                    bottom: 5,
+                  }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip />
+                  <Bar dataKey="trees" fill="#4CAF50" />
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartContainer>
           </div>
         </div>
       </div>
