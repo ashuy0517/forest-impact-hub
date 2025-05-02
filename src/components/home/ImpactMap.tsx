@@ -1,5 +1,6 @@
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
+import ForestMap from "../map/ForestMap";
 
 const forestLocations = [
   { id: 1, name: "Amazon Rainforest", lat: -3.4653, lng: -62.2159, trees: 15000, area: "Brazil" },
@@ -11,7 +12,6 @@ const forestLocations = [
 ];
 
 const ImpactMap = () => {
-  const mapContainerRef = useRef<HTMLDivElement>(null);
   const [activeLocation, setActiveLocation] = useState<number | null>(null);
 
   const handleLocationHover = (id: number | null) => {
@@ -53,14 +53,8 @@ const ImpactMap = () => {
                 ))}
               </div>
             </div>
-            <div className="lg:w-2/3 bg-forest-800 relative overflow-hidden" style={{ height: "500px" }}>
-              <div className="absolute inset-0 flex items-center justify-center text-white">
-                <div className="text-center">
-                  <p className="text-lg mb-4">Interactive map will load here</p>
-                  <p className="text-sm opacity-70">Satellite imagery and growth tracking</p>
-                </div>
-              </div>
-              <div ref={mapContainerRef} className="w-full h-full"></div>
+            <div className="lg:w-2/3 relative overflow-hidden">
+              <ForestMap locations={forestLocations} height="500px" />
             </div>
           </div>
         </div>
