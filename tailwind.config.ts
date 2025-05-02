@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,6 +62,43 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				// Forest theme colors
+				forest: {
+					50: '#E8F5E9',
+					100: '#C8E6C9',
+					200: '#A5D6A7',
+					300: '#81C784',
+					400: '#66BB6A',
+					500: '#4CAF50',
+					600: '#43A047',
+					700: '#388E3C',
+					800: '#2E7D32',
+					900: '#1B5E20',
+				},
+				earth: {
+					50: '#EFEBE9',
+					100: '#D7CCC8',
+					200: '#BCAAA4',
+					300: '#A1887F',
+					400: '#8D6E63',
+					500: '#795548',
+					600: '#6D4C41',
+					700: '#5D4037',
+					800: '#4E342E',
+					900: '#3E2723',
+				},
+				sky: {
+					50: '#E3F2FD',
+					100: '#BBDEFB',
+					200: '#90CAF9',
+					300: '#64B5F6',
+					400: '#42A5F5',
+					500: '#2196F3',
+					600: '#1E88E5',
+					700: '#1976D2',
+					800: '#1565C0',
+					900: '#0D47A1',
 				}
 			},
 			borderRadius: {
@@ -84,11 +122,21 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'leaf-sway': {
+					'0%, 100%': { transform: 'rotate(-3deg)' },
+					'50%': { transform: 'rotate(3deg)' },
+				},
+				'grow': {
+					'0%': { transform: 'scale(0.95)', opacity: '0.7' },
+					'100%': { transform: 'scale(1)', opacity: '1' },
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'leaf-sway': 'leaf-sway 5s ease-in-out infinite',
+				'grow': 'grow 0.5s ease-out'
 			}
 		}
 	},
