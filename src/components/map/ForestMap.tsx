@@ -97,12 +97,12 @@ const ForestMap = ({
       
       if (id === highlightedLocationId) {
         // Make highlighted marker's popup show and update content
-        const loc = locations.find(l => l.id === id);
-        if (loc) {
+        const location = locations.find(l => l.id === id);
+        if (location) {
           marker.getPopup().setHTML(
-            `<h3 class="text-sm font-medium">${loc.name}</h3>
-             <p class="text-xs">${loc.area || ''}</p>
-             <p class="text-xs">Trees: ${loc.trees?.toLocaleString() || 0}</p>
+            `<h3 class="text-sm font-medium">${location.name}</h3>
+             <p class="text-xs">${location.area || ''}</p>
+             <p class="text-xs">Trees: ${location.trees?.toLocaleString() || 0}</p>
              <p class="text-xs mt-2 font-medium">✨ Currently selected</p>`
           );
         }
@@ -122,22 +122,22 @@ const ForestMap = ({
         markersRef.current[id] = newMarker;
         
         // If highlighted, fly to that location
-        const loc = locations.find(l => l.id === id);
-        if (loc) {
+        const highlightedLocation = locations.find(l => l.id === id);
+        if (highlightedLocation) {
           map.current?.flyTo({
-            center: [loc.lng, loc.lat],
+            center: [highlightedLocation.lng, highlightedLocation.lat],
             zoom: 5,
             duration: 2000
           });
         }
       } else if (marker.getElement().style.zIndex === '10') {
         // Reset previously highlighted marker
-        const loc = locations.find(l => l.id === id);
-        if (loc) {
+        const location = locations.find(l => l.id === id);
+        if (location) {
           marker.getPopup().setHTML(
-            `<h3 class="text-sm font-medium">${loc.name}</h3>
-             <p class="text-xs">${loc.area || ''}</p>
-             ${loc.trees ? `<p class="text-xs">Trees: ${loc.trees.toLocaleString()}</p>` : ''}`
+            `<h3 class="text-sm font-medium">${location.name}</h3>
+             <p class="text-xs">${location.area || ''}</p>
+             ${location.trees ? `<p class="text-xs">Trees: ${location.trees.toLocaleString()}</p>` : ''}`
           );
         }
         
