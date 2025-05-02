@@ -12,9 +12,9 @@ const Map = () => {
     <Layout>
       <div className="container mx-auto px-4 py-12 mt-12">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-forest-800">Global Tree Planting Initiatives</h1>
+          <h1 className="text-3xl font-bold text-forest-800">Tree Planting Initiatives in India</h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto mt-2">
-            Explore organizations making a difference through reforestation around the world.
+            Explore organizations making a difference through reforestation across India.
           </p>
         </div>
         

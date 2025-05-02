@@ -18,66 +18,66 @@ interface Organization {
 const organizations: Organization[] = [
   {
     id: 1,
-    name: "Green Earth Initiative",
-    type: "ngo",
-    location: "Amazon Basin, Brazil",
-    treesPlanted: 150000,
-    description: "Focused on restoring deforested areas in the Amazon rainforest.",
-    yearFounded: 2008
+    name: "Green India Mission",
+    type: "government",
+    location: "Delhi, India",
+    treesPlanted: 250000,
+    description: "National initiative to increase forest cover and improve quality of forests in India.",
+    yearFounded: 2014
   },
   {
     id: 2,
-    name: "Brazilian Environmental Protection Agency",
-    type: "government",
-    location: "Multiple Regions, Brazil",
-    treesPlanted: 750000,
-    description: "Government effort to combat deforestation and promote biodiversity.",
-    yearFounded: 1992
+    name: "Grow-Trees",
+    type: "ngo",
+    location: "Mumbai, India",
+    treesPlanted: 120000,
+    description: "Leading social enterprise for tree plantation, environmental conservation and rural communities.",
+    yearFounded: 2010
   },
   {
     id: 3,
-    name: "Reforest Africa",
+    name: "SankalpTaru Foundation",
     type: "ngo",
-    location: "Congo Basin",
-    treesPlanted: 325000,
-    description: "Working with local communities to restore forest coverage across central Africa.",
+    location: "Uttarakhand, India",
+    treesPlanted: 180000,
+    description: "Technology-driven NGO focusing on environmental sustainability through tree plantation.",
     yearFounded: 2012
   },
   {
     id: 4,
-    name: "Ministry of Forests - Indonesia",
+    name: "Rajasthan Forest Department",
     type: "government",
-    location: "Borneo, Indonesia",
-    treesPlanted: 520000,
-    description: "National program to restore rainforest and combat illegal logging.",
-    yearFounded: 2005
+    location: "Jaipur, India",
+    treesPlanted: 320000,
+    description: "State government initiative to increase green cover across Rajasthan's arid regions.",
+    yearFounded: 1985
   },
   {
     id: 5,
-    name: "Taiga Restoration Society",
+    name: "Isha Foundation - Cauvery Calling",
     type: "ngo",
-    location: "Siberia, Russia",
-    treesPlanted: 280000,
-    description: "Focusing on coniferous forest restoration and protection of wildlife corridors.",
-    yearFounded: 2010
+    location: "Tamil Nadu, India",
+    treesPlanted: 450000,
+    description: "Movement to revitalize river Cauvery through large-scale tree planting along the river basin.",
+    yearFounded: 2019
   },
   {
     id: 6,
-    name: "Indigenous Forest Guardians",
+    name: "Kerala Community Forestry",
     type: "community",
-    location: "Great Bear Rainforest, Canada",
+    location: "Kerala, India",
     treesPlanted: 95000,
-    description: "Indigenous-led initiative to protect old-growth forests and restore degraded areas.",
-    yearFounded: 2015
+    description: "Community-led initiative to restore and protect the Western Ghats biodiversity.",
+    yearFounded: 2013
   },
   {
     id: 7,
-    name: "Australian Reforestation Department",
-    type: "government",
-    location: "Queensland, Australia",
-    treesPlanted: 180000,
-    description: "Government program to restore native eucalyptus forests and promote wildlife corridors.",
-    yearFounded: 2000
+    name: "Himalayan Environmental Trust",
+    type: "ngo",
+    location: "Himachal Pradesh, India",
+    treesPlanted: 75000,
+    description: "Focused on reforestation of Himalayan slopes to prevent landslides and preserve biodiversity.",
+    yearFounded: 2008
   }
 ];
 

@@ -20,13 +20,13 @@ interface ForestMapProps {
 
 // Default forest locations that match our organizations
 const defaultLocations: Location[] = [
-  { id: 1, name: "Green Earth Initiative", lat: -3.4653, lng: -62.2159, trees: 150000, area: "Amazon Basin, Brazil" },
-  { id: 2, name: "Brazilian Environmental Protection Agency", lat: -10.7832, lng: -55.4915, trees: 750000, area: "Multiple Regions, Brazil" },
-  { id: 3, name: "Reforest Africa", lat: -0.7832, lng: 23.6558, trees: 325000, area: "Congo Basin" },
-  { id: 4, name: "Ministry of Forests - Indonesia", lat: 0.9619, lng: 114.5548, trees: 520000, area: "Borneo, Indonesia" },
-  { id: 5, name: "Taiga Restoration Society", lat: 60.0000, lng: 105.0000, trees: 280000, area: "Siberia, Russia" },
-  { id: 6, name: "Indigenous Forest Guardians", lat: 52.8821, lng: -128.1561, trees: 95000, area: "Great Bear Rainforest, Canada" },
-  { id: 7, name: "Australian Reforestation Department", lat: -16.2500, lng: 145.4167, trees: 180000, area: "Queensland, Australia" },
+  { id: 1, name: "Green India Mission", lat: 28.6139, lng: 77.2090, trees: 250000, area: "Delhi, India" },
+  { id: 2, name: "Grow-Trees", lat: 19.0760, lng: 72.8777, trees: 120000, area: "Mumbai, India" },
+  { id: 3, name: "SankalpTaru Foundation", lat: 30.0668, lng: 79.0193, trees: 180000, area: "Uttarakhand, India" },
+  { id: 4, name: "Rajasthan Forest Department", lat: 26.9124, lng: 75.7873, trees: 320000, area: "Jaipur, India" },
+  { id: 5, name: "Isha Foundation - Cauvery Calling", lat: 11.1271, lng: 78.6569, trees: 450000, area: "Tamil Nadu, India" },
+  { id: 6, name: "Kerala Community Forestry", lat: 10.8505, lng: 76.2711, trees: 95000, area: "Kerala, India" },
+  { id: 7, name: "Himalayan Environmental Trust", lat: 32.0872, lng: 77.1730, trees: 75000, area: "Himachal Pradesh, India" },
 ];
 
 const ForestMap = ({ 
@@ -55,8 +55,8 @@ const ForestMap = ({
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
       style: 'mapbox://styles/mapbox/satellite-v9',
-      center: [0, 20],
-      zoom: 1.5,
+      center: [78.9629, 20.5937], // Center on India
+      zoom: 4,
     });
 
     // Add navigation controls
@@ -94,17 +94,32 @@ const ForestMap = ({
     
     Object.entries(markersRef.current).forEach(([idStr, marker]) => {
       const id = parseInt(idStr);
-      const el = marker.getElement();
       
       if (id === highlightedLocationId) {
-        // Make highlighted marker larger and different color
-        marker.setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML(
-          `<h3 class="text-sm font-medium">${locations.find(loc => loc.id === id)?.name}</h3>
-           <p class="text-xs">${locations.find(loc => loc.id === id)?.area || ''}</p>
-           <p class="text-xs">Trees: ${locations.find(loc => loc.id === id)?.trees?.toLocaleString() || 0}</p>
-           <p class="text-xs mt-2 font-medium">✨ Currently selected</p>`
-        ));
+        // Make highlighted marker's popup show and update content
+        const loc = locations.find(l => l.id === id);
+        if (loc) {
+          marker.getPopup().setHTML(
+            `<h3 class="text-sm font-medium">${loc.name}</h3>
+             <p class="text-xs">${loc.area || ''}</p>
+             <p class="text-xs">Trees: ${loc.trees?.toLocaleString() || 0}</p>
+             <p class="text-xs mt-2 font-medium">✨ Currently selected</p>`
+          );
+        }
+        
         marker.getElement().style.zIndex = '10';
+        
+        // Create a new marker with different color
+        const newMarker = new mapboxgl.Marker({ color: '#FF5733' })
+          .setLngLat(marker.getLngLat())
+          .setPopup(marker.getPopup())
+          .addTo(map.current!);
+        
+        // Remove the old marker
+        marker.remove();
+        
+        // Update the reference
+        markersRef.current[id] = newMarker;
         
         // If highlighted, fly to that location
         const loc = locations.find(l => l.id === id);
@@ -115,23 +130,31 @@ const ForestMap = ({
             duration: 2000
           });
         }
-      } else {
-        // Reset other markers
+      } else if (marker.getElement().style.zIndex === '10') {
+        // Reset previously highlighted marker
         const loc = locations.find(l => l.id === id);
         if (loc) {
-          marker.setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML(
+          marker.getPopup().setHTML(
             `<h3 class="text-sm font-medium">${loc.name}</h3>
              <p class="text-xs">${loc.area || ''}</p>
              ${loc.trees ? `<p class="text-xs">Trees: ${loc.trees.toLocaleString()}</p>` : ''}`
-          ));
+          );
         }
+        
         marker.getElement().style.zIndex = '1';
+        
+        // Create a new marker with standard color
+        const newMarker = new mapboxgl.Marker({ color: '#4CAF50' })
+          .setLngLat(marker.getLngLat())
+          .setPopup(marker.getPopup())
+          .addTo(map.current!);
+        
+        // Remove the old marker
+        marker.remove();
+        
+        // Update the reference
+        markersRef.current[id] = newMarker;
       }
-      
-      // Update marker color
-      marker.remove();
-      marker.setColor(id === highlightedLocationId ? '#FF5733' : '#4CAF50');
-      marker.addTo(map.current!);
     });
   }, [highlightedLocationId, locations]);
 
@@ -140,20 +163,6 @@ const ForestMap = ({
       initializeMap();
     }
   }, [mapboxToken]);
-  
-  // Fly to highlighted location when it changes
-  useEffect(() => {
-    if (!map.current || !highlightedLocationId) return;
-    
-    const location = locations.find(loc => loc.id === highlightedLocationId);
-    if (location) {
-      map.current.flyTo({
-        center: [location.lng, location.lat],
-        zoom: 5,
-        duration: 1500
-      });
-    }
-  }, [highlightedLocationId, locations]);
 
   if (!mapboxToken) {
     return (
