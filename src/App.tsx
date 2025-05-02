@@ -9,6 +9,7 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
+import Map from "./pages/Map";
 import { AuthProvider } from "./context/AuthContext";
 
 // Create a new client for TanStack Query
@@ -26,8 +27,8 @@ const App = () => (
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/map" element={<Map />} />
             {/* These routes would be implemented in future iterations */}
-            <Route path="/map" element={<Index />} />
             <Route path="/sponsor" element={<Index />} />
             <Route path="/about" element={<Index />} />
             {/* Catch-all route for 404 pages */}

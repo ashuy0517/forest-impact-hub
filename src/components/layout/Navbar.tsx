@@ -1,11 +1,16 @@
 
 import { Button } from "@/components/ui/button";
 import { TreeDeciduous, User } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 
 const Navbar = () => {
   const { user, logout } = useAuth();
+  const location = useLocation();
+  
+  const isActive = (path: string) => {
+    return location.pathname === path;
+  };
   
   return (
     <header className="fixed w-full bg-background/80 backdrop-blur-md z-50 border-b">
@@ -16,17 +21,29 @@ const Navbar = () => {
         </Link>
         
         <nav className="hidden md:flex items-center space-x-6">
-          <Link to="/" className="text-forest-700 hover:text-forest-500 transition-colors">
+          <Link 
+            to="/" 
+            className={`transition-colors ${isActive('/') ? 'text-forest-500 font-medium' : 'text-forest-700 hover:text-forest-500'}`}
+          >
             Home
           </Link>
-          <Link to="/map" className="text-forest-700 hover:text-forest-500 transition-colors">
+          <Link 
+            to="/map" 
+            className={`transition-colors ${isActive('/map') ? 'text-forest-500 font-medium' : 'text-forest-700 hover:text-forest-500'}`}
+          >
             Impact Map
           </Link>
-          <Link to="/sponsor" className="text-forest-700 hover:text-forest-500 transition-colors">
+          <Link 
+            to="/sponsor" 
+            className={`transition-colors ${isActive('/sponsor') ? 'text-forest-500 font-medium' : 'text-forest-700 hover:text-forest-500'}`}
+          >
             Sponsor Trees
           </Link>
           {user && (
-            <Link to="/dashboard" className="text-forest-700 hover:text-forest-500 transition-colors">
+            <Link 
+              to="/dashboard" 
+              className={`transition-colors ${isActive('/dashboard') ? 'text-forest-500 font-medium' : 'text-forest-700 hover:text-forest-500'}`}
+            >
               Dashboard
             </Link>
           )}
