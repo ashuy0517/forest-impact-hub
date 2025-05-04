@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Award, Gift, Leaf, Star, TreeDeciduous, Trophy } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const rewardItems = [
   {

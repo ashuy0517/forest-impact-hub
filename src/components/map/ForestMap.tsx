@@ -122,10 +122,10 @@ const ForestMap = ({
         markersRef.current[id] = newMarker;
         
         // If highlighted, fly to that location
-        const highlightedLocation = locations.find(l => l.id === id);
-        if (highlightedLocation) {
+        const highlightedLoc = locations.find(l => l.id === id);
+        if (highlightedLoc) {
           map.current?.flyTo({
-            center: [highlightedLocation.lng, highlightedLocation.lat],
+            center: [highlightedLoc.lng, highlightedLoc.lat],
             zoom: 5,
             duration: 2000
           });
@@ -162,6 +162,14 @@ const ForestMap = ({
     if (mapboxToken) {
       initializeMap();
     }
+    
+    return () => {
+      // Clean up markers and map on unmount
+      if (map.current) {
+        Object.values(markersRef.current).forEach(marker => marker.remove());
+        map.current.remove();
+      }
+    };
   }, [mapboxToken]);
 
   if (!mapboxToken) {

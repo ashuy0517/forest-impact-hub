@@ -30,14 +30,15 @@ const GoogleEarthMap = ({
   // Default to center of India if no locations
   const defaultCenter = { lat: 23.5937, lng: 78.9629 };
 
+  // Initial map setup
   useEffect(() => {
     const loadMap = async () => {
-      const loader = new Loader({
-        apiKey: '', // You'd typically use an API key here
-        version: "weekly",
-      });
-
       try {
+        const loader = new Loader({
+          apiKey: '', // You'd typically use an API key here
+          version: "weekly",
+        });
+
         await loader.load();
         setMapLoaded(true);
         
@@ -64,19 +65,33 @@ const GoogleEarthMap = ({
     };
 
     loadMap();
+
+    // Cleanup function to prevent memory leaks
+    return () => {
+      // Clear markers before unmounting
+      if (markersRef.current) {
+        markersRef.current.forEach(marker => {
+          marker.setMap(null);
+        });
+        markersRef.current = [];
+      }
+    };
   }, []);
 
   // Create or update markers when locations change or map loads
   useEffect(() => {
     if (!mapLoaded || !googleMapRef.current) return;
 
-    // Clear existing markers
-    markersRef.current.forEach(marker => marker.setMap(null));
+    // Clear existing markers properly
+    markersRef.current.forEach(marker => {
+      marker.setMap(null);
+    });
     markersRef.current = [];
 
     if (locations.length === 0) return;
 
-    locations.forEach(location => {
+    // Add new markers
+    const newMarkers = locations.map(location => {
       const isHighlighted = location.id === highlightedLocationId;
       
       const marker = new google.maps.Marker({
@@ -107,8 +122,10 @@ const GoogleEarthMap = ({
         infoWindow.open(googleMapRef.current, marker);
       });
 
-      markersRef.current.push(marker);
+      return marker;
     });
+    
+    markersRef.current = newMarkers;
 
     // If a location is highlighted, center and zoom to it
     if (highlightedLocationId !== null) {
