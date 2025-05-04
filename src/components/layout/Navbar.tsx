@@ -17,7 +17,7 @@ const Navbar = () => {
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
         <Link to="/" className="flex items-center space-x-2">
           <TreeDeciduous className="h-6 w-6 text-forest-600" />
-          <span className="font-bold text-xl text-forest-800">ForestImpactHub</span>
+          <span className="font-bold text-xl text-forest-800">Tree Revive</span>
         </Link>
         
         <nav className="hidden md:flex items-center space-x-6">
@@ -38,6 +38,12 @@ const Navbar = () => {
             className={`transition-colors ${isActive('/sponsor') ? 'text-forest-500 font-medium' : 'text-forest-700 hover:text-forest-500'}`}
           >
             Sponsor Trees
+          </Link>
+          <Link 
+            to="/rewards" 
+            className={`transition-colors ${isActive('/rewards') ? 'text-forest-500 font-medium' : 'text-forest-700 hover:text-forest-500'}`}
+          >
+            Rewards
           </Link>
           {user && (
             <Link 

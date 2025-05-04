@@ -1,10 +1,13 @@
 
+import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Check } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 
 const packages = [
   {
+    id: "seedling",
     name: "Seedling",
     price: 25,
     description: "Plant 5 trees and begin your reforestation journey",
@@ -12,11 +15,14 @@ const packages = [
       "Plant 5 native trees",
       "Basic tree growth tracking",
       "Personalized certificate",
-      "1 starter badge"
+      "1 starter badge",
+      "25 reward points"
     ],
-    popular: false
+    popular: false,
+    rewardPoints: 25
   },
   {
+    id: "forest-builder",
     name: "Forest Builder",
     price: 100,
     description: "Create a mini-forest with 25 trees and enhanced tracking features",
@@ -26,11 +32,14 @@ const packages = [
       "Detailed impact reports",
       "Premium digital certificate",
       "3 achievement badges",
-      "Forest Builder community access"
+      "Forest Builder community access",
+      "125 reward points"
     ],
-    popular: true
+    popular: true,
+    rewardPoints: 125
   },
   {
+    id: "ecosystem-restorer",
     name: "Ecosystem Restorer",
     price: 500,
     description: "Make a significant impact with 150 trees and comprehensive monitoring",
@@ -41,15 +50,35 @@ const packages = [
       "Personalized impact webpage",
       "All achievement badges",
       "Exclusive restoration events",
-      "Name inscription at plantation site"
+      "Name inscription at plantation site",
+      "750 reward points"
     ],
-    popular: false
+    popular: false,
+    rewardPoints: 750
   }
 ];
 
 const SponsorshipPackages = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const handleChoosePackage = (packageItem: typeof packages[0]) => {
+    // Store the selected package in session storage to retrieve it in checkout
+    sessionStorage.setItem('selectedPackage', JSON.stringify(packageItem));
+    
+    // Show a toast confirmation
+    toast({
+      title: `${packageItem.name} package selected!`,
+      description: `You'll earn ${packageItem.rewardPoints} reward points with this purchase.`,
+      duration: 3000,
+    });
+    
+    // Navigate to checkout page
+    navigate('/checkout');
+  };
+
   return (
-    <section className="py-16 bg-gradient-to-b from-white to-forest-50">
+    <section className="py-16 bg-gradient-to-b from-white to-forest-50" id="packages">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold text-forest-800 mb-4">Choose Your Impact</h2>
@@ -91,6 +120,7 @@ const SponsorshipPackages = () => {
                 <Button 
                   className={`w-full ${pkg.popular ? 'bg-forest-600 hover:bg-forest-700' : ''}`}
                   variant={pkg.popular ? 'default' : 'outline'}
+                  onClick={() => handleChoosePackage(pkg)}
                 >
                   Choose {pkg.name}
                 </Button>

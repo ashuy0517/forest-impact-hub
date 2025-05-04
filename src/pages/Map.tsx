@@ -4,9 +4,15 @@ import MapSelector from "@/components/map/MapSelector";
 import { Button } from "@/components/ui/button";
 import PlantingOrganizations from "@/components/map/PlantingOrganizations";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const Map = () => {
   const [selectedOrgId, setSelectedOrgId] = useState<number | null>(null);
+  const navigate = useNavigate();
+  
+  const handlePartnerClick = () => {
+    navigate('/sponsor');
+  };
   
   return (
     <Layout>
@@ -28,8 +34,11 @@ const Map = () => {
         </div>
         
         <div className="mt-8 text-center">
-          <Button className="bg-forest-600 hover:bg-forest-700">
-            Partner with an Organization
+          <Button 
+            className="bg-forest-600 hover:bg-forest-700"
+            onClick={handlePartnerClick}
+          >
+            Sponsor Trees Now
           </Button>
         </div>
       </div>

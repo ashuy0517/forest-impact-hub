@@ -7,6 +7,8 @@ import SponsorshipPackages from "@/components/home/SponsorshipPackages";
 import ImpactStats from "@/components/home/ImpactStats";
 import Testimonials from "@/components/home/Testimonials";
 import CallToAction from "@/components/home/CallToAction";
+import RewardsSection from "@/components/home/RewardsSection";
+import ReferralCallout from "@/components/home/ReferralCallout";
 
 const Index = () => {
   return (
@@ -15,6 +17,8 @@ const Index = () => {
       <FeaturesSection />
       <ImpactMap />
       <SponsorshipPackages />
+      <RewardsSection />
+      <ReferralCallout />
       <ImpactStats />
       <Testimonials />
       <CallToAction />
