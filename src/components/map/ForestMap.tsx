@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
+import { useToast } from '@/hooks/use-toast';
 
 interface Location {
   id: number;
@@ -38,6 +39,7 @@ const ForestMap = ({
   const map = useRef<mapboxgl.Map | null>(null);
   const markersRef = useRef<{[key: number]: mapboxgl.Marker}>({});
   const [mapboxToken, setMapboxToken] = useState<string>('');
+  const { toast } = useToast();
 
   useEffect(() => {
     // In a real app, this would come from environment variables or backend
@@ -49,43 +51,48 @@ const ForestMap = ({
 
   const initializeMap = () => {
     if (!mapboxToken || !mapContainer.current) return;
-
-    mapboxgl.accessToken = mapboxToken;
     
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/satellite-v9',
-      center: [78.9629, 20.5937], // Center on India
-      zoom: 4,
-    });
+    try {
+      mapboxgl.accessToken = mapboxToken;
+      
+      map.current = new mapboxgl.Map({
+        container: mapContainer.current,
+        style: 'mapbox://styles/mapbox/satellite-v9',
+        center: [78.9629, 20.5937], // Center on India
+        zoom: 4,
+      });
 
-    // Add navigation controls
-    map.current.addControl(
-      new mapboxgl.NavigationControl(),
-      'top-right'
-    );
-
-    // Add markers for each forest location
-    locations.forEach(location => {
-      const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(
-        `<h3 class="text-sm font-medium">${location.name}</h3>
-         <p class="text-xs">${location.area || ''}</p>
-         ${location.trees ? `<p class="text-xs">Trees: ${location.trees.toLocaleString()}</p>` : ''}`
+      // Add navigation controls
+      map.current.addControl(
+        new mapboxgl.NavigationControl(),
+        'top-right'
       );
 
-      const marker = new mapboxgl.Marker({ 
-        color: location.id === highlightedLocationId ? '#FF5733' : '#4CAF50' 
-      })
-        .setLngLat([location.lng, location.lat])
-        .setPopup(popup)
-        .addTo(map.current!);
-      
-      markersRef.current[location.id] = marker;
-    });
+      // Add markers for each forest location
+      locations.forEach(location => {
+        const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(
+          `<h3 class="text-sm font-medium">${location.name}</h3>
+           <p class="text-xs">${location.area || ''}</p>
+           ${location.trees ? `<p class="text-xs">Trees: ${location.trees.toLocaleString()}</p>` : ''}`
+        );
 
-    return () => {
-      map.current?.remove();
-    };
+        const marker = new mapboxgl.Marker({ 
+          color: location.id === highlightedLocationId ? '#FF5733' : '#4CAF50' 
+        })
+          .setLngLat([location.lng, location.lat])
+          .setPopup(popup)
+          .addTo(map.current!);
+        
+        markersRef.current[location.id] = marker;
+      });
+    } catch (error) {
+      console.error("Error initializing map:", error);
+      toast({
+        title: "Map Error",
+        description: "Failed to initialize map. Please check your Mapbox token.",
+        variant: "destructive"
+      });
+    }
   };
 
   // Update markers when highlighted location changes
@@ -123,8 +130,8 @@ const ForestMap = ({
         
         // If highlighted, fly to that location
         const highlightedLoc = locations.find(l => l.id === id);
-        if (highlightedLoc) {
-          map.current?.flyTo({
+        if (highlightedLoc && map.current) {
+          map.current.flyTo({
             center: [highlightedLoc.lng, highlightedLoc.lat],
             zoom: 5,
             duration: 2000
@@ -159,15 +166,26 @@ const ForestMap = ({
   }, [highlightedLocationId, locations]);
 
   useEffect(() => {
-    if (mapboxToken) {
+    let mapInstance = map.current;
+    
+    if (mapboxToken && !mapInstance) {
       initializeMap();
     }
     
+    // Clean up function
     return () => {
-      // Clean up markers and map on unmount
-      if (map.current) {
-        Object.values(markersRef.current).forEach(marker => marker.remove());
-        map.current.remove();
+      // Clean up markers before map
+      if (markersRef.current) {
+        Object.values(markersRef.current).forEach(marker => {
+          if (marker) marker.remove();
+        });
+        markersRef.current = {};
+      }
+      
+      // Then remove the map
+      if (mapInstance) {
+        mapInstance.remove();
+        map.current = null;
       }
     };
   }, [mapboxToken]);

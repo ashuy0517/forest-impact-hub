@@ -1,6 +1,7 @@
 
 import { useRef, useEffect, useState } from 'react';
 import { Loader } from '@googlemaps/js-api-loader';
+import { useToast } from '@/hooks/use-toast';
 
 interface Location {
   id: number;
@@ -26,12 +27,15 @@ const GoogleEarthMap = ({
   const googleMapRef = useRef<google.maps.Map | null>(null);
   const markersRef = useRef<google.maps.Marker[]>([]);
   const [mapLoaded, setMapLoaded] = useState(false);
-
+  const { toast } = useToast();
+  
   // Default to center of India if no locations
   const defaultCenter = { lat: 23.5937, lng: 78.9629 };
 
   // Initial map setup
   useEffect(() => {
+    let isMounted = true;
+    
     const loadMap = async () => {
       try {
         const loader = new Loader({
@@ -40,6 +44,8 @@ const GoogleEarthMap = ({
         });
 
         await loader.load();
+        if (!isMounted) return;
+        
         setMapLoaded(true);
         
         if (mapRef.current && !googleMapRef.current) {
@@ -61,6 +67,13 @@ const GoogleEarthMap = ({
         }
       } catch (error) {
         console.error("Error loading Google Maps:", error);
+        if (isMounted) {
+          toast({
+            title: "Map Error",
+            description: "Could not load Google Earth map. Please try again later.",
+            variant: "destructive"
+          });
+        }
       }
     };
 
@@ -68,13 +81,18 @@ const GoogleEarthMap = ({
 
     // Cleanup function to prevent memory leaks
     return () => {
+      isMounted = false;
+      
       // Clear markers before unmounting
-      if (markersRef.current) {
+      if (markersRef.current && markersRef.current.length > 0) {
         markersRef.current.forEach(marker => {
-          marker.setMap(null);
+          if (marker) marker.setMap(null);
         });
         markersRef.current = [];
       }
+      
+      // Clear map instance
+      googleMapRef.current = null;
     };
   }, []);
 
@@ -83,10 +101,12 @@ const GoogleEarthMap = ({
     if (!mapLoaded || !googleMapRef.current) return;
 
     // Clear existing markers properly
-    markersRef.current.forEach(marker => {
-      marker.setMap(null);
-    });
-    markersRef.current = [];
+    if (markersRef.current && markersRef.current.length > 0) {
+      markersRef.current.forEach(marker => {
+        if (marker) marker.setMap(null);
+      });
+      markersRef.current = [];
+    }
 
     if (locations.length === 0) return;
 
@@ -128,9 +148,9 @@ const GoogleEarthMap = ({
     markersRef.current = newMarkers;
 
     // If a location is highlighted, center and zoom to it
-    if (highlightedLocationId !== null) {
+    if (highlightedLocationId !== null && googleMapRef.current) {
       const highlightedLocation = locations.find(loc => loc.id === highlightedLocationId);
-      if (highlightedLocation && googleMapRef.current) {
+      if (highlightedLocation) {
         googleMapRef.current.setCenter({
           lat: highlightedLocation.lat,
           lng: highlightedLocation.lng
