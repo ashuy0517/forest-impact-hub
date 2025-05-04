@@ -40,17 +40,35 @@ const ForestMap = ({
   const markersRef = useRef<{[key: number]: mapboxgl.Marker}>({});
   const [mapboxToken, setMapboxToken] = useState<string>('');
   const { toast } = useToast();
+  const mapInitializedRef = useRef<boolean>(false);
 
+  // Load token from localStorage
   useEffect(() => {
-    // In a real app, this would come from environment variables or backend
-    const token = localStorage.getItem('mapboxToken');
-    if (token) {
-      setMapboxToken(token);
+    try {
+      const token = localStorage.getItem('mapboxToken');
+      if (token) {
+        setMapboxToken(token);
+      }
+    } catch (error) {
+      console.error("Error accessing localStorage:", error);
     }
   }, []);
 
-  const initializeMap = () => {
-    if (!mapboxToken || !mapContainer.current) return;
+  // Safely remove all markers from the map
+  const clearAllMarkers = () => {
+    Object.values(markersRef.current).forEach(marker => {
+      try {
+        if (marker) marker.remove();
+      } catch (error) {
+        console.error("Error removing marker:", error);
+      }
+    });
+    markersRef.current = {};
+  };
+
+  // Initialize map when token is available
+  useEffect(() => {
+    if (!mapboxToken || !mapContainer.current || mapInitializedRef.current) return;
     
     try {
       mapboxgl.accessToken = mapboxToken;
@@ -62,28 +80,18 @@ const ForestMap = ({
         zoom: 4,
       });
 
+      // Set flag that map is initialized
+      mapInitializedRef.current = true;
+
       // Add navigation controls
       map.current.addControl(
         new mapboxgl.NavigationControl(),
         'top-right'
       );
 
-      // Add markers for each forest location
-      locations.forEach(location => {
-        const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(
-          `<h3 class="text-sm font-medium">${location.name}</h3>
-           <p class="text-xs">${location.area || ''}</p>
-           ${location.trees ? `<p class="text-xs">Trees: ${location.trees.toLocaleString()}</p>` : ''}`
-        );
-
-        const marker = new mapboxgl.Marker({ 
-          color: location.id === highlightedLocationId ? '#FF5733' : '#4CAF50' 
-        })
-          .setLngLat([location.lng, location.lat])
-          .setPopup(popup)
-          .addTo(map.current!);
-        
-        markersRef.current[location.id] = marker;
+      // Handle map load event
+      map.current.on('load', () => {
+        addMarkers();
       });
     } catch (error) {
       console.error("Error initializing map:", error);
@@ -93,108 +101,75 @@ const ForestMap = ({
         variant: "destructive"
       });
     }
-  };
 
-  // Update markers when highlighted location changes
-  useEffect(() => {
-    if (!map.current) return;
-    
-    Object.entries(markersRef.current).forEach(([idStr, marker]) => {
-      const id = parseInt(idStr);
+    // Cleanup function
+    return () => {
+      clearAllMarkers();
       
-      if (id === highlightedLocationId) {
-        // Make highlighted marker's popup show and update content
-        const location = locations.find(l => l.id === id);
-        if (location) {
-          marker.getPopup().setHTML(
-            `<h3 class="text-sm font-medium">${location.name}</h3>
-             <p class="text-xs">${location.area || ''}</p>
-             <p class="text-xs">Trees: ${location.trees?.toLocaleString() || 0}</p>
-             <p class="text-xs mt-2 font-medium">✨ Currently selected</p>`
-          );
-        }
+      if (map.current) {
+        map.current.remove();
+        map.current = null;
+      }
+      
+      mapInitializedRef.current = false;
+    };
+  }, [mapboxToken]);
+
+  // Add markers to the map
+  const addMarkers = () => {
+    if (!map.current || !mapInitializedRef.current) return;
+    
+    // Clear existing markers first
+    clearAllMarkers();
+    
+    try {
+      // Add markers for each forest location
+      locations.forEach(location => {
+        if (!map.current) return;
         
-        marker.getElement().style.zIndex = '10';
+        const isHighlighted = location.id === highlightedLocationId;
         
-        // Create a new marker with different color
-        const newMarker = new mapboxgl.Marker({ color: '#FF5733' })
-          .setLngLat(marker.getLngLat())
-          .setPopup(marker.getPopup())
+        const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(
+          `<h3 class="text-sm font-medium">${location.name}</h3>
+           <p class="text-xs">${location.area || ''}</p>
+           ${location.trees ? `<p class="text-xs">Trees: ${location.trees.toLocaleString()}</p>` : ''}
+           ${isHighlighted ? `<p class="text-xs mt-2 font-medium">✨ Currently selected</p>` : ''}`
+        );
+
+        const marker = new mapboxgl.Marker({ 
+          color: isHighlighted ? '#FF5733' : '#4CAF50' 
+        })
+          .setLngLat([location.lng, location.lat])
+          .setPopup(popup)
           .addTo(map.current!);
         
-        // Remove the old marker
-        marker.remove();
-        
-        // Update the reference
-        markersRef.current[id] = newMarker;
+        markersRef.current[location.id] = marker;
         
         // If highlighted, fly to that location
-        const highlightedLoc = locations.find(l => l.id === id);
-        if (highlightedLoc && map.current) {
+        if (isHighlighted) {
           map.current.flyTo({
-            center: [highlightedLoc.lng, highlightedLoc.lat],
+            center: [location.lng, location.lat],
             zoom: 5,
             duration: 2000
           });
         }
-      } else if (marker.getElement().style.zIndex === '10') {
-        // Reset previously highlighted marker
-        const location = locations.find(l => l.id === id);
-        if (location) {
-          marker.getPopup().setHTML(
-            `<h3 class="text-sm font-medium">${location.name}</h3>
-             <p class="text-xs">${location.area || ''}</p>
-             ${location.trees ? `<p class="text-xs">Trees: ${location.trees.toLocaleString()}</p>` : ''}`
-          );
-        }
-        
-        marker.getElement().style.zIndex = '1';
-        
-        // Create a new marker with standard color
-        const newMarker = new mapboxgl.Marker({ color: '#4CAF50' })
-          .setLngLat(marker.getLngLat())
-          .setPopup(marker.getPopup())
-          .addTo(map.current!);
-        
-        // Remove the old marker
-        marker.remove();
-        
-        // Update the reference
-        markersRef.current[id] = newMarker;
-      }
-    });
+      });
+    } catch (error) {
+      console.error("Error adding markers:", error);
+    }
+  };
+
+  // Update markers and map when highlighted location changes
+  useEffect(() => {
+    if (!map.current || !mapInitializedRef.current) return;
+    
+    addMarkers();
   }, [highlightedLocationId, locations]);
 
-  useEffect(() => {
-    let mapInstance = map.current;
-    
-    if (mapboxToken && !mapInstance) {
-      initializeMap();
-    }
-    
-    // Clean up function
-    return () => {
-      // Clean up markers before map
-      if (markersRef.current) {
-        Object.values(markersRef.current).forEach(marker => {
-          if (marker) marker.remove();
-        });
-        markersRef.current = {};
-      }
-      
-      // Then remove the map
-      if (mapInstance) {
-        mapInstance.remove();
-        map.current = null;
-      }
-    };
-  }, [mapboxToken]);
-
-  if (!mapboxToken) {
-    return (
+  return <div ref={mapContainer} style={{ height }} className="rounded-lg">
+    {!mapboxToken && (
       <div 
-        className="flex flex-col items-center justify-center gap-4 p-4" 
-        style={{ height }}
+        className="flex flex-col items-center justify-center gap-4 p-4 absolute inset-0 bg-white" 
       >
         <p className="text-muted-foreground text-center">To display the interactive map, please enter your Mapbox access token</p>
         
@@ -206,8 +181,17 @@ const ForestMap = ({
             onChange={(e) => {
               const value = e.target.value.trim();
               if (value) {
-                localStorage.setItem('mapboxToken', value);
-                setMapboxToken(value);
+                try {
+                  localStorage.setItem('mapboxToken', value);
+                  setMapboxToken(value);
+                } catch (error) {
+                  console.error("Error saving to localStorage:", error);
+                  toast({
+                    title: "Storage Error",
+                    description: "Could not save the token. Private browsing mode may be enabled.",
+                    variant: "destructive"
+                  });
+                }
               }
             }}
           />
@@ -217,10 +201,8 @@ const ForestMap = ({
           Get your token at <a href="https://mapbox.com" target="_blank" rel="noreferrer" className="text-forest-600">mapbox.com</a>
         </p>
       </div>
-    );
-  }
-
-  return <div ref={mapContainer} style={{ height }} className="rounded-lg" />;
+    )}
+  </div>;
 };
 
 export default ForestMap;

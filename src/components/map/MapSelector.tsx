@@ -28,21 +28,23 @@ const MapSelector = ({
   highlightedLocationId = null 
 }: MapSelectorProps) => {
   const [mapProvider, setMapProvider] = useState<MapProvider>('mapbox');
-  const [key, setKey] = useState<number>(0); // Used to force remounting of components
+  const [mapKey, setMapKey] = useState<number>(0); // Used to force remounting of components
   const { toast } = useToast();
   
   // Force remount of map components when switching providers to avoid DOM cleanup issues
-  useEffect(() => {
-    setKey(prevKey => prevKey + 1);
-  }, [mapProvider]);
-  
   const handleMapProviderChange = (provider: MapProvider) => {
     if (provider !== mapProvider) {
-      setMapProvider(provider);
-      toast({
-        title: `Switched to ${provider === 'mapbox' ? 'Mapbox' : 'Google Earth'} map`,
-        description: "Map view updated successfully",
-      });
+      // Increment key to force a complete unmount/remount cycle
+      setMapKey(prevKey => prevKey + 1);
+      
+      // Update the provider state after a short delay
+      setTimeout(() => {
+        setMapProvider(provider);
+        toast({
+          title: `Switched to ${provider === 'mapbox' ? 'Mapbox' : 'Google Earth'} map`,
+          description: "Map view updated successfully",
+        });
+      }, 50);
     }
   };
 
@@ -70,14 +72,14 @@ const MapSelector = ({
       <div className="flex-1">
         {mapProvider === 'mapbox' ? (
           <ForestMap 
-            key={`mapbox-${key}`}
+            key={`mapbox-${mapKey}`}
             locations={locations} 
             height={height} 
             highlightedLocationId={highlightedLocationId} 
           />
         ) : (
           <GoogleEarthMap 
-            key={`google-${key}`}
+            key={`google-${mapKey}`}
             locations={locations} 
             height={height} 
             highlightedLocationId={highlightedLocationId} 

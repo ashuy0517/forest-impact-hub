@@ -25,7 +25,8 @@ const GoogleEarthMap = ({
 }: GoogleEarthMapProps) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const googleMapRef = useRef<google.maps.Map | null>(null);
-  const markersRef = useRef<google.maps.Marker[]>([]);
+  const markersRef = useRef<{[key: number]: google.maps.Marker}>({});
+  const infoWindowsRef = useRef<{[key: number]: google.maps.InfoWindow}>({});
   const [mapLoaded, setMapLoaded] = useState(false);
   const { toast } = useToast();
   
@@ -84,68 +85,79 @@ const GoogleEarthMap = ({
       isMounted = false;
       
       // Clear markers before unmounting
-      if (markersRef.current && markersRef.current.length > 0) {
-        markersRef.current.forEach(marker => {
-          if (marker) marker.setMap(null);
-        });
-        markersRef.current = [];
-      }
+      clearAllMarkers();
       
       // Clear map instance
       googleMapRef.current = null;
     };
   }, []);
 
+  // Safely clear all markers and info windows
+  const clearAllMarkers = () => {
+    Object.values(markersRef.current).forEach(marker => {
+      if (marker) marker.setMap(null);
+    });
+    markersRef.current = {};
+    
+    Object.values(infoWindowsRef.current).forEach(infoWindow => {
+      if (infoWindow) infoWindow.close();
+    });
+    infoWindowsRef.current = {};
+  };
+
   // Create or update markers when locations change or map loads
   useEffect(() => {
     if (!mapLoaded || !googleMapRef.current) return;
 
-    // Clear existing markers properly
-    if (markersRef.current && markersRef.current.length > 0) {
-      markersRef.current.forEach(marker => {
-        if (marker) marker.setMap(null);
-      });
-      markersRef.current = [];
-    }
+    // Clear existing markers properly before adding new ones
+    clearAllMarkers();
 
     if (locations.length === 0) return;
 
     // Add new markers
-    const newMarkers = locations.map(location => {
+    locations.forEach(location => {
+      if (!googleMapRef.current) return;
+      
       const isHighlighted = location.id === highlightedLocationId;
       
-      const marker = new google.maps.Marker({
-        position: { lat: location.lat, lng: location.lng },
-        map: googleMapRef.current,
-        title: location.name,
-        animation: isHighlighted ? google.maps.Animation.BOUNCE : undefined,
-        icon: {
-          path: google.maps.SymbolPath.CIRCLE,
-          fillColor: isHighlighted ? '#4CAF50' : '#2196F3',
-          fillOpacity: 0.8,
-          strokeWeight: 2,
-          strokeColor: 'white',
-          scale: 8
-        }
-      });
+      try {
+        const marker = new google.maps.Marker({
+          position: { lat: location.lat, lng: location.lng },
+          map: googleMapRef.current,
+          title: location.name,
+          animation: isHighlighted ? google.maps.Animation.BOUNCE : undefined,
+          icon: {
+            path: google.maps.SymbolPath.CIRCLE,
+            fillColor: isHighlighted ? '#4CAF50' : '#2196F3',
+            fillOpacity: 0.8,
+            strokeWeight: 2,
+            strokeColor: 'white',
+            scale: 8
+          }
+        });
+        
+        // Store marker reference
+        markersRef.current[location.id] = marker;
 
-      // Add an info window
-      const infoWindow = new google.maps.InfoWindow({
-        content: `<div>
-          <h3 style="font-weight: bold; margin-bottom: 4px;">${location.name}</h3>
-          ${location.trees ? `<p>Trees planted: ${location.trees}</p>` : ''}
-          ${location.area ? `<p>Area: ${location.area}</p>` : ''}
-        </div>`
-      });
+        // Add an info window
+        const infoWindow = new google.maps.InfoWindow({
+          content: `<div>
+            <h3 style="font-weight: bold; margin-bottom: 4px;">${location.name}</h3>
+            ${location.trees ? `<p>Trees planted: ${location.trees}</p>` : ''}
+            ${location.area ? `<p>Area: ${location.area}</p>` : ''}
+          </div>`
+        });
+        
+        // Store info window reference
+        infoWindowsRef.current[location.id] = infoWindow;
 
-      marker.addListener('click', () => {
-        infoWindow.open(googleMapRef.current, marker);
-      });
-
-      return marker;
+        marker.addListener('click', () => {
+          infoWindow.open(googleMapRef.current, marker);
+        });
+      } catch (error) {
+        console.error(`Error creating marker for location ${location.id}:`, error);
+      }
     });
-    
-    markersRef.current = newMarkers;
 
     // If a location is highlighted, center and zoom to it
     if (highlightedLocationId !== null && googleMapRef.current) {
